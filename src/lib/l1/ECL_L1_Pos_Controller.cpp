@@ -264,7 +264,7 @@ ECL_L1_Pos_Controller::navigate_loiter(const Vector2f &vector_A, const Vector2f 
 	/* calculate velocity on circle / along tangent */
 	float tangent_vel = xtrack_vel_center * loiter_direction;
 
-	/* prevent PD output from turning the wrong way */
+	/* prevent PD output from turning the wrong way when in circle mode */
 	if (tangent_vel < 0.0f && _circle_mode) {
 		lateral_accel_sp_circle_pd = math::max(lateral_accel_sp_circle_pd, 0.0f);
 	}
@@ -280,6 +280,9 @@ ECL_L1_Pos_Controller::navigate_loiter(const Vector2f &vector_A, const Vector2f 
 	 * Switch between circle (loiter) and capture (towards waypoint center) mode when
 	 * the commands switch over. Only fly towards waypoint if outside the circle.
 	 */
+	printf("**********************\n");
+	printf("lateral_accel_sp_center: %f, lateral_accel_sp_circle:%f, xtrack_err_circle: %f ",
+	       (double)lateral_accel_sp_center, (double)lateral_accel_sp_circle, (double)xtrack_err_circle);
 
 	// XXX check switch over
 	if ((lateral_accel_sp_center < lateral_accel_sp_circle && loiter_direction > 0 && xtrack_err_circle > 0.0f) ||
@@ -290,9 +293,11 @@ ECL_L1_Pos_Controller::navigate_loiter(const Vector2f &vector_A, const Vector2f 
 		_bearing_error = eta;
 		/* bearing from current position to L1 point */
 		_nav_bearing = atan2f(-vector_A_to_airplane_unit(1), -vector_A_to_airplane_unit(0));
+		printf("circle mode false\n");
 
 	} else {
 		_lateral_accel = lateral_accel_sp_circle;
+		printf("circle mode true\n");
 		_circle_mode = true;
 		_bearing_error = 0.0f;
 		/* bearing from current position to L1 point */
